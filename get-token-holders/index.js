@@ -57,8 +57,12 @@ async function getHistory(dynamo, account, stage) {
     return history;
 }
 
-let getTransactions = async(userId, pathParameters, requestBody, stage) => {
+let getTransactions = async(userId, event) => {
     let dynamo = new AWS.DynamoDB.DocumentClient();
+
+    let pathParameters = event.pathParameters
+    let requestBody = JSON.parse(event.body)
+    let stage = event.stageVariables.transaction_database
 
     let history = await getHistory(dynamo, userId, stage);
     let result = {};
@@ -79,4 +83,33 @@ let getTransactions = async(userId, pathParameters, requestBody, stage) => {
     return result;
 };
 
-exports.handler = Auth.getHandler(getTransactions);
+exports.handler = async(event, context, callback) => {
+    let statusCode = 200;
+    let data;
+
+    try {
+        let userId = await Auth.getUserId(event.requestContext.authorizer.claims);
+        if (userId) {
+            statusCode = 200;
+            data = await getTransactions(userId, event);
+        } else {
+            statusCode = 403;
+            data = {
+                "message": "user id not found",
+            };
+        }
+    } catch(err) {
+        console.log(err);
+
+        statusCode = 500;
+        data = {
+            'message': err.message,
+        };
+    }
+
+    return {
+        statusCode: statusCode,
+        headers: {"Access-Control-Allow-Origin": "*"},
+        body: JSON.stringify(data),
+    };
+};

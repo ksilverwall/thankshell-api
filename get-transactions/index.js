@@ -105,7 +105,7 @@ let isAdmin = async(dynamo, groupId, userId) => {
 let getTransactions = async(userId, event) => {
     let dynamo = new AWS.DynamoDB.DocumentClient();
 
-    let stage = event.requestContext.stage;
+    let stage = event.stageVariables.transaction_database
 
     let history;
     if (event.multiValueQueryStringParameters && event.multiValueQueryStringParameters['user_id']) {
@@ -137,4 +137,33 @@ let getTransactions = async(userId, event) => {
     };
 };
 
-exports.handler = Auth.getHandler(getTransactions);
+exports.handler = async(event, context, callback) => {
+    let statusCode = 200;
+    let data;
+
+    try {
+        let userId = await Auth.getUserId(event.requestContext.authorizer.claims);
+        if (userId) {
+            statusCode = 200;
+            data = await getTransactions(userId, event);
+        } else {
+            statusCode = 403;
+            data = {
+                "message": "user id not found",
+            };
+        }
+    } catch(err) {
+        console.log(err);
+
+        statusCode = 500;
+        data = {
+            'message': err.message,
+        };
+    }
+
+    return {
+        statusCode: statusCode,
+        headers: {"Access-Control-Allow-Origin": "*"},
+        body: JSON.stringify(data),
+    };
+};

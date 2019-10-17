@@ -18,7 +18,7 @@ Mappings:
     production:
       TransactionDatabase: production
     staging:
-      TransactionDatabase: staging
+      TransactionDatabase: develop
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
