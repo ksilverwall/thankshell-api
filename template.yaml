@@ -17,8 +17,12 @@ Mappings:
   EnvironmentMap:
     production:
       TransactionDatabase: production
+      TableInfo: table_info
+      RemittanceTransactions: remittance_transactions
     staging:
       TransactionDatabase: develop
+      TableInfo: dev_table_info
+      RemittanceTransactions: dev_remittance_transactions
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -82,6 +86,11 @@ Resources:
             Path: /user
             Method: get
             RestApiId: !Ref ThankshellApi
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: thankshell_user_links
+        - DynamoDBReadPolicy:
+            TableName: thankshell_users
       Layers:
       - !Ref CommonLayer
 
@@ -98,6 +107,11 @@ Resources:
             Path: /user
             Method: put
             RestApiId: !Ref ThankshellApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: thankshell_user_links
+        - DynamoDBCrudPolicy:
+            TableName: thankshell_users
       Layers:
       - !Ref CommonLayer
 
@@ -118,6 +132,13 @@ Resources:
             Path: /groups/{group}
             Method: get
             RestApiId: !Ref ThankshellApi
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: thankshell_user_links
+        - DynamoDBReadPolicy:
+            TableName: thankshell_users
+        - DynamoDBReadPolicy:
+            TableName: thankshell_groups
       Layers:
       - !Ref CommonLayer
 
@@ -138,6 +159,11 @@ Resources:
             Path: /token/{token}/published
             Method: get
             RestApiId: !Ref ThankshellApi
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: thankshell_user_links
+        - DynamoDBReadPolicy:
+            TableName: thankshell_users
       Layers:
       - !Ref CommonLayer
 
@@ -154,6 +180,17 @@ Resources:
             Path: /token/{token}/published
             Method: post
             RestApiId: !Ref ThankshellApi
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: thankshell_user_links
+        - DynamoDBReadPolicy:
+            TableName: thankshell_users
+        - DynamoDBReadPolicy:
+            TableName: thankshell_groups
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions ]
       Layers:
       - !Ref CommonLayer
 
@@ -174,6 +211,15 @@ Resources:
             Path: /token/{token}/holders
             Method: get
             RestApiId: !Ref ThankshellApi
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: thankshell_user_links
+        - DynamoDBReadPolicy:
+            TableName: thankshell_users
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions ]
       Layers:
       - !Ref CommonLayer
 
@@ -190,6 +236,15 @@ Resources:
             Path: /token/{token}/holders/{user}
             Method: get
             RestApiId: !Ref ThankshellApi
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: thankshell_user_links
+        - DynamoDBReadPolicy:
+            TableName: thankshell_users
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions ]
       Layers:
       - !Ref CommonLayer
 
@@ -210,6 +265,17 @@ Resources:
             Path: /token/{token}/transactions
             Method: get
             RestApiId: !Ref ThankshellApi
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: thankshell_user_links
+        - DynamoDBReadPolicy:
+            TableName: thankshell_users
+        - DynamoDBReadPolicy:
+            TableName: thankshell_groups
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions ]
       Layers:
       - !Ref CommonLayer
 
@@ -226,5 +292,16 @@ Resources:
             Path: /token/{token}/transactions
             Method: post
             RestApiId: !Ref ThankshellApi
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: thankshell_user_links
+        - DynamoDBReadPolicy:
+            TableName: thankshell_users
+        - DynamoDBReadPolicy:
+            TableName: thankshell_groups
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions ]
       Layers:
       - !Ref CommonLayer
