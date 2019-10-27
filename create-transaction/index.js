@@ -147,7 +147,7 @@ class TransactionController
 
 let getGroupInfo = async(dynamo, groupId) => {
     let data = await dynamo.get({
-        TableName: 'thankshell_groups',
+        TableName: process.env.GROUPS_TABLE_NAME,
             Key:{
                 'group_id': groupId,
             }

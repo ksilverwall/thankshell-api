@@ -93,7 +93,7 @@ let getAllHistory = async(dynamo, stage) => {
 
 let isAdmin = async(dynamo, groupId, userId) => {
     let data = await dynamo.get({
-        TableName: 'thankshell_groups',
+        TableName: process.env.GROUPS_TABLE_NAME,
             Key:{
                 'group_id': groupId,
             }

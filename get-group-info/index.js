@@ -63,7 +63,7 @@ let getTransactions = async(event) => {
 
     let dynamo = new AWS.DynamoDB.DocumentClient();
     let groupInfo = await dynamo.get({
-        TableName: 'thankshell_groups',
+        TableName: process.env.GROUPS_TABLE_NAME,
         Key:{
             'group_id': gid,
         },

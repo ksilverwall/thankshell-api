@@ -11,7 +11,7 @@ let getUserInfo = async(claims) => {
 
         let authId = identities.providerName + ':' + identities.userId;
         let result = await dynamo.get({
-            TableName: 'thankshell_user_links',
+            TableName: process.env.AUTH_TABLE_NAME,
             Key:{
                 'auth_id': authId,
             },
@@ -29,7 +29,7 @@ let getUserInfo = async(claims) => {
     }
 
     let result = await dynamo.get({
-        TableName: 'thankshell_users',
+        TableName: process.env.USERS_TABLE_NAME,
         Key:{
             'user_id': userId,
         },

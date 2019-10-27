@@ -34,6 +34,11 @@ Mappings:
 Globals:
   Function:
     Timeout: 3
+    Environment:
+      Variables:
+        AUTH_TABLE_NAME: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        USERS_TABLE_NAME: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+        GROUPS_TABLE_NAME: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
 
 Resources:
 

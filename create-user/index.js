@@ -21,7 +21,7 @@ let createUserLink = async(event) => {
     let dynamo = new AWS.DynamoDB.DocumentClient();
 
     let result = await dynamo.get({
-        TableName: 'thankshell_users',
+        TableName: process.env.USERS_TABLE_NAME,
         Key:{
             'user_id': userId,
         },
@@ -38,7 +38,7 @@ let createUserLink = async(event) => {
     }
 
     await dynamo.put({
-        TableName: 'thankshell_users',
+        TableName: process.env.USERS_TABLE_NAME,
         Item: {
             user_id: userId,
             status: 'ENABLE',
@@ -49,7 +49,7 @@ let createUserLink = async(event) => {
         let identities = JSON.parse(claims.identities);
         let authId = identities.providerType + ':' + identities.userId;
         await dynamo.update({
-            TableName: 'thankshell_user_links',
+            TableName: process.env.AUTH_TABLE_NAME,
             Key:{
                 'auth_id': authId,
             },
