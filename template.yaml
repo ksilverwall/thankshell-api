@@ -19,10 +19,16 @@ Mappings:
       TransactionDatabase: production
       TableInfo: table_info
       RemittanceTransactions: remittance_transactions
+      AuthTable: thankshell_authrozation_prd
+      UsersTable: thankshell_users_prd
+      GroupsTable: thankshell_groups_prd
     staging:
       TransactionDatabase: develop
       TableInfo: dev_table_info
       RemittanceTransactions: dev_remittance_transactions
+      AuthTable: thankshell_authrozation_stg
+      UsersTable: thankshell_users_stg
+      GroupsTable: thankshell_groups_stg
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -55,6 +61,33 @@ Resources:
           ResponseParameters:
             Headers:
               Access-Control-Allow-Origin: "'*'"
+
+  ###############################################
+  # Database
+
+  AuthTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+        TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        PrimaryKey:
+            Name: auth_id
+            Type: String
+
+  UsersTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+        TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+        PrimaryKey:
+            Name: user_id
+            Type: String
+
+  GroupsTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+        TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
+        PrimaryKey:
+            Name: group_id
+            Type: String
 
   ###############################################
   # Layers
@@ -91,6 +124,10 @@ Resources:
             TableName: thankshell_user_links
         - DynamoDBReadPolicy:
             TableName: thankshell_users
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
       Layers:
       - !Ref CommonLayer
 
@@ -112,6 +149,10 @@ Resources:
             TableName: thankshell_user_links
         - DynamoDBCrudPolicy:
             TableName: thankshell_users
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
       Layers:
       - !Ref CommonLayer
 
@@ -139,6 +180,12 @@ Resources:
             TableName: thankshell_users
         - DynamoDBReadPolicy:
             TableName: thankshell_groups
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
       Layers:
       - !Ref CommonLayer
 
@@ -187,6 +234,12 @@ Resources:
             TableName: thankshell_users
         - DynamoDBReadPolicy:
             TableName: thankshell_groups
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
         - DynamoDBCrudPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
         - DynamoDBCrudPolicy:
@@ -217,6 +270,10 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: thankshell_users
         - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+        - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
         - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions ]
@@ -241,6 +298,10 @@ Resources:
             TableName: thankshell_user_links
         - DynamoDBReadPolicy:
             TableName: thankshell_users
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
         - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
         - DynamoDBReadPolicy:
@@ -273,6 +334,12 @@ Resources:
         - DynamoDBReadPolicy:
             TableName: thankshell_groups
         - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
+        - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
         - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions ]
@@ -299,6 +366,12 @@ Resources:
             TableName: thankshell_users
         - DynamoDBReadPolicy:
             TableName: thankshell_groups
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
         - DynamoDBCrudPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
         - DynamoDBCrudPolicy:
