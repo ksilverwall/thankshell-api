@@ -126,10 +126,6 @@ Resources:
             RestApiId: !Ref ThankshellApi
       Policies:
         - DynamoDBReadPolicy:
-            TableName: thankshell_user_links
-        - DynamoDBReadPolicy:
-            TableName: thankshell_users
-        - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
         - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
@@ -150,10 +146,6 @@ Resources:
             Method: put
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName: thankshell_user_links
-        - DynamoDBCrudPolicy:
-            TableName: thankshell_users
         - DynamoDBCrudPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
         - DynamoDBCrudPolicy:
@@ -179,12 +171,6 @@ Resources:
             Method: get
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: thankshell_user_links
-        - DynamoDBReadPolicy:
-            TableName: thankshell_users
-        - DynamoDBReadPolicy:
-            TableName: thankshell_groups
         - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
         - DynamoDBReadPolicy:
@@ -234,12 +220,6 @@ Resources:
             RestApiId: !Ref ThankshellApi
       Policies:
         - DynamoDBReadPolicy:
-            TableName: thankshell_user_links
-        - DynamoDBReadPolicy:
-            TableName: thankshell_users
-        - DynamoDBReadPolicy:
-            TableName: thankshell_groups
-        - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
         - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
@@ -271,10 +251,6 @@ Resources:
             RestApiId: !Ref ThankshellApi
       Policies:
         - DynamoDBReadPolicy:
-            TableName: thankshell_user_links
-        - DynamoDBReadPolicy:
-            TableName: thankshell_users
-        - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
         - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
@@ -299,10 +275,6 @@ Resources:
             Method: get
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: thankshell_user_links
-        - DynamoDBReadPolicy:
-            TableName: thankshell_users
         - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
         - DynamoDBReadPolicy:
@@ -333,12 +305,6 @@ Resources:
             RestApiId: !Ref ThankshellApi
       Policies:
         - DynamoDBReadPolicy:
-            TableName: thankshell_user_links
-        - DynamoDBReadPolicy:
-            TableName: thankshell_users
-        - DynamoDBReadPolicy:
-            TableName: thankshell_groups
-        - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
         - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
@@ -365,12 +331,6 @@ Resources:
             Method: post
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: thankshell_user_links
-        - DynamoDBReadPolicy:
-            TableName: thankshell_users
-        - DynamoDBReadPolicy:
-            TableName: thankshell_groups
         - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
         - DynamoDBReadPolicy:
