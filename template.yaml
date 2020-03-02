@@ -180,6 +180,29 @@ Resources:
       Layers:
       - !Ref CommonLayer
 
+  AddMemberToGroup:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: groups/add-member
+      Handler: index.handler
+      Runtime: nodejs10.x
+      Events:
+        ApiTrigger:
+          Type: Api
+          Properties:
+            Path: /groups/{group}/members/{member}
+            Method: put
+            RestApiId: !Ref ThankshellApi
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
+      Layers:
+      - !Ref CommonLayer
+
   RemoveMemberFromGroup:
     Type: AWS::Serverless::Function
     Properties:
