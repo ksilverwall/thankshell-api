@@ -17,7 +17,11 @@ const getUser = async(dynamo, userId) => {
     }).promise();
 
     if (result.Item) {
-        return result.Item;
+        return {
+            status: result.Item.status,
+            user_id: result.Item.user_id,
+            displayName: result.Item.display_name ? result.Item.display_name : result.Item.user_id,
+        };
     } else {
         return {
             status: 'UNREGISTERED',
