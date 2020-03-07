@@ -1,125 +1,60 @@
-let Auth = require('thankshell-libs/auth.js');
-let AWS = require("aws-sdk");
+const Auth = require('thankshell-libs/auth.js');
+const AWS = require("aws-sdk");
 
-let getHistory = async(dynamo, account, stage) => {
-    let tableName = {
-        'production': {
-            'info': 'table_info',
-            'data': 'remittance_transactions',
-        },
-        'develop': {
-            'info': 'dev_table_info',
-            'data': 'dev_remittance_transactions',
-        },
-    };
+const getHistory = async(dynamo, info_table_name, data_table_name, account) => {
+    const tableInfo = await dynamo.get({
+        TableName: info_table_name,
+        Key:{
+            'name': data_table_name,
+        }
+    }).promise()
+
+    const maxBlockId = tableInfo.Item ? Math.floor(tableInfo.Item.current_id_sequence / 1000) : 0
 
     let history = {
         Count: 0,
-        Items: []
-    };
-
-    let tableInfo = await dynamo.get({
-        TableName: tableName[stage]['info'],
-        Key:{
-            'name': tableName[stage]['data'],
-        }
-    }).promise();
-
-    let maxBlockId = tableInfo.Item ? Math.floor(tableInfo.Item.current_id_sequence / 1000) : 0;
-
-    for (let blockId=maxBlockId; blockId >= 0; --blockId) {
-        let params = {
-            TableName: tableName[stage]['data'],
-            KeyConditionExpression: "block_id = :block",
-            FilterExpression: "from_account = :account or to_account = :account",
-            ExpressionAttributeValues: {
-                ":block": blockId,
-                ":account": account
-            }
-        };
-
-        let data = await dynamo.query(params).promise();
-
-        history.Items = history.Items.concat(data.Items);
-        history.Count += data.Count;
+        Items: [],
     }
 
-    return history;
-};
-
-let getAllHistory = async(dynamo, stage) => {
-    let tableName = {
-        'production': {
-            'info': 'table_info',
-            'data': 'remittance_transactions',
-        },
-        'develop': {
-            'info': 'dev_table_info',
-            'data': 'dev_remittance_transactions',
-        },
-    };
-
-    let history = {
-        Count: 0,
-        Items: []
-    };
-
-    let tableInfo = await dynamo.get({
-        TableName: tableName[stage]['info'],
-        Key:{
-            'name': tableName[stage]['data'],
-        }
-    }).promise();
-
-    let maxBlockId = tableInfo.Item ? Math.floor(tableInfo.Item.current_id_sequence / 1000) : 0;
-
     for (let blockId=maxBlockId; blockId >= 0; --blockId) {
-        let params = {
-            TableName: tableName[stage]['data'],
-            KeyConditionExpression: "block_id = :block",
-            ExpressionAttributeValues: {
-                ":block": blockId
+        const data = await dynamo.query(
+            account ? {
+                TableName: data_table_name,
+                KeyConditionExpression: "block_id = :block",
+                FilterExpression: "from_account = :account or to_account = :account",
+                ExpressionAttributeValues: {
+                    ":block": blockId,
+                    ":account": account
+                }
+            } : {
+                TableName: data_table_name,
+                KeyConditionExpression: "block_id = :block",
+                ExpressionAttributeValues: {
+                    ":block": blockId
+                }
             }
-        };
+        ).promise()
 
-        let data = await dynamo.query(params).promise();
-
-        history.Items = history.Items.concat(data.Items);
-        history.Count += data.Count;
+        history.Items = history.Items.concat(data.Items)
+        history.Count += data.Count
     }
 
-    return history;
-};
+    return history
+}
 
-let isAdmin = async(dynamo, groupId, userId) => {
-    let data = await dynamo.get({
+const isAdmin = async(dynamo, groupId, userId) => {
+    const data = await dynamo.get({
         TableName: process.env.GROUPS_TABLE_NAME,
             Key:{
                 'group_id': groupId,
             }
-    }).promise();
+    }).promise()
 
-    return data.Item.admins.values.includes(userId);
-};
+    return data.Item.admins.values.includes(userId)
+}
 
-let getTransactions = async(userId, event) => {
-    let dynamo = new AWS.DynamoDB.DocumentClient();
-
-    let stage = event.stageVariables.transaction_database
-
-    let history;
-    if (event.multiValueQueryStringParameters && event.multiValueQueryStringParameters['user_id']) {
-        let targetUser = event.multiValueQueryStringParameters['user_id'][0];
-        history = await getHistory(dynamo, targetUser, stage);
-    } else {
-        if (!await isAdmin(dynamo, 'sla', userId)) {
-            throw Error("管理者権限ではありません");
-        }
-        history = await getAllHistory(dynamo, stage);
-    }
-
+const getHoldings = async(history, userId) => {
     let carried = 0;
-
     history.Items.forEach((item) => {
         if(isFinite(item.amount)) {
             if(item.from_account == userId) {
@@ -131,39 +66,64 @@ let getTransactions = async(userId, event) => {
         }
     });
 
-    return {
-        history: history,
-        carried: carried
-    };
-};
+    return carried
+}
 
-exports.handler = async(event, context, callback) => {
-    let statusCode = 200;
-    let data;
+const getTargetUserId = (params) => {
+    if (params && params['user_id']) {
+        return params['user_id'][0]
+    } else {
+        return null
+    }
+}
 
-    try {
-        let userId = await Auth.getUserId(event.requestContext.authorizer.claims);
-        if (userId) {
-            statusCode = 200;
-            data = await getTransactions(userId, event);
-        } else {
-            statusCode = 403;
-            data = {
-                "message": "user id not found",
-            };
-        }
-    } catch(err) {
-        console.log(err);
+const run = async(event) => {
+    const dynamo = new AWS.DynamoDB.DocumentClient()
 
-        statusCode = 500;
-        data = {
-            'message': err.message,
-        };
+    const info_table_name = process.env.TABLE_INFO_TABLE_NAME
+    const data_table_name = process.env.REMITTANCE_TRANSACTIONS
+
+    const params = event.multiValueQueryStringParameters
+    const userId = await Auth.getUserId(event.requestContext.authorizer.claims);
+    if (!userId) {
+        throw new Error('user id not found')
     }
 
+    // FIXME: get from query
+    const groupId = 'sla'
+
+    const targetUser = getTargetUserId(params)
+    if (!targetUser) {
+        if (!await isAdmin(dynamo, groupId, userId)) {
+            throw Error("管理者権限ではありません");
+        }
+    }
+
+    const history = await getHistory(dynamo, info_table_name, data_table_name, targetUser)
+
     return {
-        statusCode: statusCode,
-        headers: {"Access-Control-Allow-Origin": "*"},
-        body: JSON.stringify(data),
-    };
-};
+        history: history,
+        carried: await getHoldings(history, userId),
+    }
+}
+
+exports.handler = async(event, context, callback) => {
+    try {
+        const data = await run(event)
+        return {
+            statusCode: 200,
+            headers: {"Access-Control-Allow-Origin": "*"},
+            body: JSON.stringify(data),
+        }
+    } catch(err) {
+        console.log(err)
+
+        return {
+            statusCode: 500,
+            headers: {"Access-Control-Allow-Origin": "*"},
+            body: JSON.stringify({
+                'message': err.message,
+            }),
+        }
+    }
+}

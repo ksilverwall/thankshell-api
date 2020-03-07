@@ -39,6 +39,8 @@ Globals:
         AUTH_TABLE_NAME: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
         USERS_TABLE_NAME: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
         GROUPS_TABLE_NAME: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
+        TABLE_INFO_TABLE_NAME: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
+        REMITTANCE_TRANSACTIONS: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions]
 
 Resources:
 
