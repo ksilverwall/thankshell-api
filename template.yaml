@@ -153,6 +153,27 @@ Resources:
       Layers:
       - !Ref CommonLayer
 
+  UpdateUser:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: update-user/
+      Handler: index.handler
+      Runtime: nodejs10.x
+      Events:
+        ApiTrigger:
+          Type: Api
+          Properties:
+            Path: /user/{userId}
+            Method: patch
+            RestApiId: !Ref ThankshellApi
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+      Layers:
+      - !Ref CommonLayer
+
   #
   # Groups
   #
