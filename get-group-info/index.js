@@ -1,6 +1,13 @@
 const Auth = require('thankshell-libs/auth.js');
 const AWS = require("aws-sdk");
 
+class ApplicationError extends Error {
+  constructor(message, code=500) {
+    super(message)
+    this.code = code
+  }
+}
+
 const getGroup = async(dynamo, groupId) => {
     const result = await dynamo.get({
         TableName: process.env.GROUPS_TABLE_NAME,
@@ -31,8 +38,12 @@ const run = async(event) => {
     const userId = await Auth.getUserId(event.requestContext.authorizer.claims)
     const group = await getGroup(dynamo, groupId)
 
+    if (!group) {
+        throw new ApplicationError(`group '${groupId}' is not found`, 404)
+    }
+
     if (!group.members.values.includes(userId)) {
-        new Error('user is not a member')
+        throw new ApplicationError('user is not a member', 403)
     }
 
     const memberDetails = await getMemberDetails(group.members.values)
@@ -42,22 +53,23 @@ const run = async(event) => {
     }
 }
 
+const getApiResponse = (code, body) => {
+    return {
+        statusCode: code,
+        headers: {"Access-Control-Allow-Origin": "*"},
+        body: JSON.stringify(body),
+    }
+}
+
 exports.handler = async(event, context, callback) => {
     try {
         const result = await run(event)
-        return {
-            statusCode: 200,
-            headers: {"Access-Control-Allow-Origin": "*"},
-            body: JSON.stringify(result),
-        };
+        return getApiResponse(200, result)
     } catch(err) {
         console.log(err);
-        return {
-            statusCode: 500,
-            headers: {"Access-Control-Allow-Origin": "*"},
-            body: JSON.stringify({
-                'message': err.message,
-            }),
-        }
+        return getApiResponse(
+            (err instanceof ApplicationError) ? err.code : 500,
+            {'message': err.message}
+        )
     }
 }
