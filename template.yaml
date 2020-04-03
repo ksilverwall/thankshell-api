@@ -131,6 +131,8 @@ Resources:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
         - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+        - DynamoDBReadPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
       Layers:
       - !Ref CommonLayer
 
@@ -221,7 +223,7 @@ Resources:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
         - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
-        - DynamoDBCrudPolicy:
+        - DynamoDBReadPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
       Layers:
       - !Ref CommonLayer
