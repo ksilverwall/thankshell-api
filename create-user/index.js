@@ -1,53 +1,37 @@
-let Auth = require('thankshell-libs/auth.js');
-let AWS = require("aws-sdk");
+const Auth = require('thankshell-libs/auth.js');
+const AWS = require("aws-sdk");
 
-let createUserLink = async(event) => {
-    let claims = event.requestContext.authorizer.claims;
-    let userInfo = await Auth.getUserInfo(claims);
+class ApplicationError extends Error {
+  constructor(message, errorCode="UNKNOWN_ERROR", statusCode=500) {
+    super(message)
+    this.statusCode = statusCode
+    this.errorCode = errorCode
+  }
+}
 
-    if(userInfo.status != 'UNREGISTERED') {
-        return {
-            statusCode: 403,
-            data: {
-                code: "AUTHINFO_ALREADY_REGISTERD",
-                message: "指定された認証情報はすでに登録されています",
-            },
-        };
-    }
-
-    let body = JSON.parse(event.body);
-    let userId = body.id;
-
-    let dynamo = new AWS.DynamoDB.DocumentClient();
-
-    let result = await dynamo.get({
+const getUser = async(dynamo, userId) => {
+    const result = await dynamo.get({
         TableName: process.env.USERS_TABLE_NAME,
         Key:{
             'user_id': userId,
         },
-    }).promise();
+    }).promise()
 
-    if (result.Item) {
-        return {
-            statusCode: 403,
-            data: {
-                code: "ID_ALREADY_REGISTERD",
-                message: "指定したIDは既に使用されています",
-            },
-        };
-    }
+    return result.Item
+}
 
+const registerUser = async(dynamo, userId, claims) => {
     await dynamo.put({
         TableName: process.env.USERS_TABLE_NAME,
         Item: {
             user_id: userId,
             status: 'ENABLE',
         }
-    }).promise();
+    }).promise()
 
     if (claims.identities) {
-        let identities = JSON.parse(claims.identities);
-        let authId = identities.providerType + ':' + identities.userId;
+        const identities = JSON.parse(claims.identities);
+        const authId = identities.providerType + ':' + identities.userId;
         await dynamo.update({
             TableName: process.env.AUTH_TABLE_NAME,
             Key:{
@@ -57,38 +41,70 @@ let createUserLink = async(event) => {
             ExpressionAttributeValues: {
                 ':value': userId,
             },
-        }).promise();
-
-        return {
-            statusCode: 200,
-            data: {},
-        };
-    } else {
-        return {
-            statusCode: 200,
-            data: {},
-        };
+        }).promise()
     }
-};
+}
+
+const run = async(event) => {
+    const dynamo = new AWS.DynamoDB.DocumentClient()
+
+    const claims = event.requestContext.authorizer.claims
+    const body = JSON.parse(event.body)
+
+    const userInfo = await Auth.getUserInfo(claims)
+
+    if(userInfo.status != 'UNREGISTERED') {
+        throw new ApplicationError(
+            "指定された認証情報はすでに登録されています",
+            "AUTHINFO_ALREADY_REGISTERD",
+            403,
+        )
+    }
+
+    const userId = body.id
+    if (await getUser(dynamo, userId)) {
+        throw new ApplicationError(
+            "指定したIDは既に使用されています",
+            "ID_ALREADY_REGISTERD",
+            403,
+        )
+    }
+
+    await registerUser(dynamo, userId, claims)
+}
+
+const getSuccessMessage = () => {
+    return {
+        statusCode: 200,
+        headers: {"Access-Control-Allow-Origin": "*"},
+        body: JSON.stringify({}),
+    }
+}
+
+const getErrorResponse = (err) => {
+    const responseBody = (err instanceof ApplicationError) ? {
+        'code': err.errorCode,
+        'message': err.message,
+    } : {
+        'code': 'UNKNOWN_ERROR',
+        'message': err.message,
+    }
+
+    return {
+        statusCode: (err instanceof ApplicationError) ? err.statusCode : 500,
+        headers: {"Access-Control-Allow-Origin": "*"},
+        body: JSON.stringify(responseBody),
+    }
+}
 
 exports.handler = async(event, context, callback) => {
     try {
-        let result = await createUserLink(event);
+        await run(event);
 
-        return {
-            statusCode: result.statusCode,
-            headers: {"Access-Control-Allow-Origin": "*"},
-            body: JSON.stringify(result.data),
-        };
+        return getSuccessMessage()
     } catch(err) {
         console.log(err);
 
-        return {
-            statusCode: 500,
-            headers: {"Access-Control-Allow-Origin": "*"},
-            body: JSON.stringify({
-                'message': err.message,
-            }),
-        };
+        return getErrorResponse(err)
     }
-};
+}
