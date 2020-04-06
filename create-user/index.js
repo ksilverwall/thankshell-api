@@ -21,6 +21,15 @@ const getUser = async(dynamo, userId) => {
 }
 
 const registerUser = async(dynamo, userId, claims) => {
+    const result = userId.match(/^\w+$/g)
+    if (!result) {
+        throw new ApplicationError(
+            "IDには英数字を指定してください",
+            "USERID_VALIDATION_ERROR",
+            403,
+        )
+    }
+
     await dynamo.put({
         TableName: process.env.USERS_TABLE_NAME,
         Item: {
