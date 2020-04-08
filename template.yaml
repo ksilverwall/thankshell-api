@@ -251,6 +251,27 @@ Resources:
       Layers:
       - !Ref CommonLayer
 
+  EntryToGroup:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: groups/entry
+      Handler: index.handler
+      Runtime: nodejs10.x
+      Events:
+        ApiTrigger:
+          Type: Api
+          Properties:
+            Path: /groups/{group}/members/{member}/user
+            Method: put
+            RestApiId: !Ref ThankshellApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+      Layers:
+      - !Ref CommonLayer
+
   #
   # Token publiched
   #
