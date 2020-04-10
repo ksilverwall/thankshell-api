@@ -1,5 +1,6 @@
 const Auth = require('thankshell-libs/auth.js');
 const AWS = require("aws-sdk");
+const crypto = require('crypto');
 
 class ApplicationError extends Error {
   constructor(message, code=500) {
@@ -19,18 +20,33 @@ const getGroup = async(dynamo, groupId) => {
     return result.Item
 }
 
-const getMemberDetails = async(memberIds) => {
+const getHash = (message) => {
+    return crypto.createHash('sha256').update(message).digest('hex')
+}
+
+const getMemberDetails = async(memberIds, secrets, adminUser) => {
     const allMembers = await Promise.all(memberIds.map(userId => Auth.getUser(userId)))
 
     let dict = {}
     allMembers.forEach(user => {
-        if (user.status === 'ENABLE') {
-            dict[user.user_id] = {displayName: user.displayName}
+        const userId = user.user_id
+        const data = {
+            state: user.status,
+            displayName: user.displayName,
         }
+        if (user.status === 'UNREGISTERED') {
+            data.linkParams = {
+                m: userId,
+                hash: getHash(userId + secrets),
+            }
+        }
+
+        dict[userId] = data
     })
 
     return dict
 }
+
 const run = async(event) => {
     const dynamo = new AWS.DynamoDB.DocumentClient()
     const groupId = event.pathParameters.group
@@ -42,13 +58,22 @@ const run = async(event) => {
         throw new ApplicationError(`group '${groupId}' is not found`, 404)
     }
 
-    if (!group.members.values.includes(userId)) {
+    const {owner, admins, group_id, requests, bank_id, members, secrets} = group
+
+    if (!members.values.includes(userId)) {
         throw new ApplicationError('user is not a member', 403)
     }
 
-    const memberDetails = await getMemberDetails(group.members.values)
+    const adminUser = admins.values.includes(userId)
+    const memberDetails = await getMemberDetails(members.values, secrets, adminUser)
+
     return {
-        ...group,
+        owner: owner,
+        admins: admins,
+        group_id: group_id,
+        requests: requests,
+        bank_id: bank_id,
+        members: members,
         memberDetails: memberDetails,
     }
 }
