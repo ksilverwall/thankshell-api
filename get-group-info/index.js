@@ -47,6 +47,24 @@ const getMemberDetails = async(memberIds, secrets, adminUser) => {
     return dict
 }
 
+const Permission = {
+    ADMIN: 'admin',
+    MEMBER: 'member',
+    VISITOR: 'visitor',
+}
+
+const getPermission = (userId, group) => {
+    if (group.admins.values.includes(userId)) {
+        return Permission.ADMIN
+    }
+
+    if (group.members.values.includes(userId)) {
+        return Permission.MEMBER
+    }
+
+    return Permission.VISITOR
+}
+
 const run = async(event) => {
     const dynamo = new AWS.DynamoDB.DocumentClient()
     const groupId = event.pathParameters.group
@@ -58,20 +76,24 @@ const run = async(event) => {
         throw new ApplicationError(`group '${groupId}' is not found`, 404)
     }
 
-    const {owner, admins, group_id, requests, bank_id, members, secrets} = group
+    const permission = getPermission(userId, group)
+    const {owner, admins, requests, bank_id, members, secrets} = group
 
-    if (!members.values.includes(userId)) {
-        throw new ApplicationError('user is not a member', 403)
+    const publicData = {
+        group_id: groupId,
+        permission: permission,
+        owner: owner,
     }
 
-    const adminUser = admins.values.includes(userId)
-    const memberDetails = await getMemberDetails(members.values, secrets, adminUser)
+    if (permission === Permission.VISITOR) {
+        return publicData
+    }
+
+    const memberDetails = await getMemberDetails(members.values, secrets, (permission === Permission.ADMIN))
 
     return {
-        owner: owner,
+        ...publicData,
         admins: admins,
-        group_id: group_id,
-        requests: requests,
         bank_id: bank_id,
         members: members,
         memberDetails: memberDetails,
