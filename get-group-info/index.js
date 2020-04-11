@@ -54,29 +54,32 @@ const Permission = {
 }
 
 const getPermission = (userId, group) => {
+    if (!userId || !group.members.values.includes(userId)) {
+        return Permission.VISITOR
+    }
+
     if (group.admins.values.includes(userId)) {
         return Permission.ADMIN
     }
 
-    if (group.members.values.includes(userId)) {
-        return Permission.MEMBER
-    }
-
-    return Permission.VISITOR
+    return Permission.MEMBER
 }
 
 const run = async(event) => {
     const dynamo = new AWS.DynamoDB.DocumentClient()
     const groupId = event.pathParameters.group
+    const claims = event.requestContext.authorizer.claims
 
-    const userId = await Auth.getUserId(event.requestContext.authorizer.claims)
     const group = await getGroup(dynamo, groupId)
-
     if (!group) {
         throw new ApplicationError(`group '${groupId}' is not found`, 404)
     }
 
+    const userId = await Auth.getUserId(claims)
     const permission = getPermission(userId, group)
+
+    console.log(`${userId} has ${permission} for ${groupId}`)
+
     const {owner, admins, requests, bank_id, members, secrets} = group
 
     const publicData = {
@@ -113,7 +116,7 @@ exports.handler = async(event, context, callback) => {
         const result = await run(event)
         return getApiResponse(200, result)
     } catch(err) {
-        console.log(err);
+        console.error(err);
         return getApiResponse(
             (err instanceof ApplicationError) ? err.code : 500,
             {'message': err.message}
