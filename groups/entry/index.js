@@ -36,7 +36,7 @@ const entryToGroup = async(dynamo, groupId, memberId, claims) => {
     const userInfo = await Auth.getUserInfo(claims)
     if(userInfo.status != 'UNREGISTERED') {
         throw new ApplicationError(
-            "ユーザはすでに登録されています",
+            `ユーザはすでに登録されています(${userInfo.user_id})`,
             "ALREADY_MEMBER_USER",
             403,
         )
@@ -83,6 +83,8 @@ const run = async(event) => {
     const memberId = event.pathParameters.member
     const claims = event.requestContext.authorizer.claims
 
+    console.log(`clains: ${JSON.stringify(claims)}`)
+
     await entryToGroup(dynamo, groupId, memberId, claims)
 }
 
@@ -119,7 +121,7 @@ exports.handler = async(event, context, callback) => {
 
         return getSuccessResponse()
     } catch(err) {
-        console.log(err)
+        console.error(err)
 
         return getErrorResponse(err)
     }
