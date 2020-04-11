@@ -9,6 +9,17 @@ class ApplicationError extends Error {
   }
 }
 
+const getGroup = async(dynamo, groupId) => {
+    const result = await dynamo.get({
+        TableName: process.env.GROUPS_TABLE_NAME,
+        Key:{
+            'group_id': groupId,
+        },
+    }).promise()
+
+    return result.Item
+}
+
 const getUser = async(dynamo, userId) => {
     const result = await dynamo.get({
         TableName: process.env.USERS_TABLE_NAME,
@@ -28,6 +39,15 @@ const entryToGroup = async(dynamo, groupId, memberId, claims) => {
         throw new ApplicationError(
             "IDには英数字を指定してください",
             "INVALID_MEMBERID_FORMAT",
+            403,
+        )
+    }
+
+    const group = await getGroup(dynamo, groupId)
+    if (!group.members.values.includes(memberId)) {
+        throw new ApplicationError(
+            `'${groupId}'の招待リストに'${userId}'を見つけられませんでした`,
+            "NO_MEMBERID_IN_LIST",
             403,
         )
     }

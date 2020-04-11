@@ -269,6 +269,8 @@ Resources:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
         - DynamoDBCrudPolicy:
             TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
       Layers:
       - !Ref CommonLayer
 
