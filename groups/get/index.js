@@ -75,7 +75,7 @@ const run = async(event) => {
 
     console.log(`${userId} has ${permission} for ${groupId}`)
 
-    const {owner, admins, requests, bank_id, members, secrets} = group
+    const {owner, admins, bank_id, members, secrets, token_name} = group
 
     const publicData = {
         groupId: groupId,
@@ -94,6 +94,7 @@ const run = async(event) => {
         memberId: userId,
         admins: admins,
         bankId: bank_id,
+        tokenName:  token_name ? token_name : 'coin',
         members: memberDetails,
     }
 }
