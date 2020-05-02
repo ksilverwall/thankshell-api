@@ -79,7 +79,6 @@ const run = async(event) => {
 
     const publicData = {
         groupId: groupId,
-        group_id: groupId,
         permission: permission,
         owner: owner,
     }
@@ -95,9 +94,7 @@ const run = async(event) => {
         memberId: userId,
         admins: admins,
         bankId: bank_id,
-        bank_id: bank_id,
         members: memberDetails,
-        memberDetails: memberDetails,
     }
 }
 
