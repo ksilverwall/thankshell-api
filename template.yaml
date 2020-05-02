@@ -30,8 +30,9 @@ Mappings:
       UsersTable: thankshell_users_stg
       GroupsTable: thankshell_groups_stg
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
+  Api:
+    OpenApiVersion: 3.0.1
   Function:
     Timeout: 10
     Environment:

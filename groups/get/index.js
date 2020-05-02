@@ -96,7 +96,7 @@ const run = async(event) => {
         admins: admins,
         bankId: bank_id,
         bank_id: bank_id,
-        members: members,
+        members: memberDetails,
         memberDetails: memberDetails,
     }
 }
