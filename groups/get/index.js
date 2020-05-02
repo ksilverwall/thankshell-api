@@ -1,13 +1,8 @@
 const Auth = require('thankshell-libs/auth.js');
+const appInterface = require('thankshell-libs/interface.js');
 const AWS = require("aws-sdk");
 const crypto = require('crypto');
 
-class ApplicationError extends Error {
-  constructor(message, code=500) {
-    super(message)
-    this.code = code
-  }
-}
 
 const getGroup = async(dynamo, groupId) => {
     const result = await dynamo.get({
@@ -72,7 +67,7 @@ const run = async(event) => {
 
     const group = await getGroup(dynamo, groupId)
     if (!group) {
-        throw new ApplicationError(`group '${groupId}' is not found`, 404)
+        throw new appInterface.ApplicationError(`group '${groupId}' is not found`, 404)
     }
 
     const userId = await Auth.getUserId(claims)
@@ -103,9 +98,10 @@ const run = async(event) => {
     }
 }
 
-const getApiResponse = (code, body) => {
+const getApiResponse = (err) => {
+    const body = {'message': err.message}
     return {
-        statusCode: code,
+        statusCode: (err instanceof ApplicationError) ? err.statusCode : 500,
         headers: {"Access-Control-Allow-Origin": "*"},
         body: JSON.stringify(body),
     }
@@ -114,12 +110,11 @@ const getApiResponse = (code, body) => {
 exports.handler = async(event, context, callback) => {
     try {
         const result = await run(event)
-        return getApiResponse(200, result)
+
+        return appInterface.getSuccessResponse(result)
     } catch(err) {
         console.error(err);
-        return getApiResponse(
-            (err instanceof ApplicationError) ? err.code : 500,
-            {'message': err.message}
-        )
+
+        return appInterface.getErrorResponse(err)
     }
 }

@@ -185,7 +185,7 @@ Resources:
   GetGroupInfo:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: get-group-info/
+      CodeUri: groups/get
       Handler: index.handler
       Runtime: nodejs10.x
       Events:
