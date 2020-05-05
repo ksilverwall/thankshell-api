@@ -30,6 +30,8 @@ Globals:
     OpenApiVersion: 3.0.1
   Function:
     Timeout: 10
+    Handler: index.handler
+    Runtime: nodejs12.x
     Environment:
       Variables:
         AUTH_TABLE_NAME: !Ref AuthTableName
@@ -113,8 +115,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: get-user-info/
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
@@ -123,12 +123,12 @@ Resources:
             Method: get
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref AuthTableName
-        - DynamoDBReadPolicy:
-            TableName: !Ref UsersTableName
-        - DynamoDBReadPolicy:
-            TableName: !Ref GroupsTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref AuthTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref UsersTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref GroupsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -136,8 +136,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: create-user/
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
@@ -157,8 +155,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: update-user/
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
@@ -182,8 +178,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: groups/get
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
@@ -205,8 +199,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: groups/add-member
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
@@ -228,8 +220,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: groups/delete-member
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
@@ -251,8 +241,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: groups/entry
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
@@ -278,8 +266,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: get-token-published/
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
@@ -297,8 +283,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: publish-token/
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
@@ -328,8 +312,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: get-token-holders/
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
@@ -353,8 +335,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: get-token-holdings/
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
@@ -382,8 +362,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: get-transactions/
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
@@ -409,8 +387,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: create-transaction/
-      Handler: index.handler
-      Runtime: nodejs10.x
       Events:
         ApiTrigger:
           Type: Api
