@@ -6,29 +6,24 @@ Description: >
   Sample SAM Template for thankshell-api
   
 Parameters:
- Environment:
-   Type: String
-   AllowedValues:
-   - staging
-   - production
-   Default: staging
-
-Mappings:
-  EnvironmentMap:
-    production:
-      TransactionDatabase: production
-      TableInfo: table_info
-      RemittanceTransactions: remittance_transactions
-      AuthTable: thankshell_authrozation_prd
-      UsersTable: thankshell_users_prd
-      GroupsTable: thankshell_groups_prd
-    staging:
-      TransactionDatabase: develop
-      TableInfo: dev_table_info
-      RemittanceTransactions: dev_remittance_transactions
-      AuthTable: thankshell_authrozation_stg
-      UsersTable: thankshell_users_stg
-      GroupsTable: thankshell_groups_stg
+  EnvName:
+    Type: String
+  AuthTableName:
+    Type: String
+  UsersTableName:
+    Type: String
+  GroupsTableName:
+    Type: String
+  InfoTableName:
+    Type: String
+  TransactionsTableName:
+    Type: String
+  Environment:
+    Type: String
+    AllowedValues:
+    - staging
+    - production
+    Default: staging
 
 Globals:
   Api:
@@ -37,11 +32,11 @@ Globals:
     Timeout: 10
     Environment:
       Variables:
-        AUTH_TABLE_NAME: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
-        USERS_TABLE_NAME: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
-        GROUPS_TABLE_NAME: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
-        TABLE_INFO_TABLE_NAME: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
-        REMITTANCE_TRANSACTIONS: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions]
+        AUTH_TABLE_NAME: !Ref AuthTableName
+        USERS_TABLE_NAME: !Ref UsersTableName
+        GROUPS_TABLE_NAME: !Ref GroupsTableName
+        TABLE_INFO_TABLE_NAME: !Ref InfoTableName
+        REMITTANCE_TRANSACTIONS: !Ref TransactionsTableName
 
 Resources:
 
@@ -59,7 +54,7 @@ Resources:
           CognitoAuthorizer:
             UserPoolArn: arn:aws:cognito-idp:ap-northeast-1:027569216980:userpool/ap-northeast-1_GyRiCriHq
       Variables:
-        transaction_database: !FindInMap [ EnvironmentMap, !Ref Environment, TransactionDatabase ]
+        transaction_database: !Ref EnvName
       Cors:
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
@@ -76,7 +71,7 @@ Resources:
   AuthTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
-        TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+        TableName: !Ref AuthTableName
         PrimaryKey:
             Name: auth_id
             Type: String
@@ -84,7 +79,7 @@ Resources:
   UsersTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
-        TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+        TableName: !Ref UsersTableName
         PrimaryKey:
             Name: user_id
             Type: String
@@ -92,7 +87,7 @@ Resources:
   GroupsTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
-        TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
+        TableName: !Ref GroupsTableName
         PrimaryKey:
             Name: group_id
             Type: String
@@ -129,11 +124,11 @@ Resources:
             RestApiId: !Ref ThankshellApi
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
+            TableName: !Ref AuthTableName
         - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+            TableName: !Ref UsersTableName
         - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
+            TableName: !Ref GroupsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -151,10 +146,10 @@ Resources:
             Method: put
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
-        - DynamoDBCrudPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+      - DynamoDBCrudPolicy:
+          TableName: !Ref AuthTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref UsersTableName
       Layers:
       - !Ref CommonLayer
 
@@ -172,10 +167,10 @@ Resources:
             Method: patch
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
-        - DynamoDBCrudPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
+      - DynamoDBReadPolicy:
+          TableName: !Ref AuthTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref UsersTableName
       Layers:
       - !Ref CommonLayer
 
@@ -197,12 +192,12 @@ Resources:
             Method: get
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
+      - DynamoDBReadPolicy:
+          TableName: !Ref AuthTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref UsersTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref GroupsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -220,12 +215,12 @@ Resources:
             Method: put
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
-        - DynamoDBCrudPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
+      - DynamoDBReadPolicy:
+          TableName: !Ref AuthTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref UsersTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref GroupsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -243,12 +238,12 @@ Resources:
             Method: delete
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
-        - DynamoDBCrudPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
+      - DynamoDBReadPolicy:
+          TableName: !Ref AuthTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref UsersTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref GroupsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -266,12 +261,12 @@ Resources:
             Method: put
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
-        - DynamoDBCrudPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
-        - DynamoDBCrudPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
+      - DynamoDBCrudPolicy:
+          TableName: !Ref AuthTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref UsersTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref GroupsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -293,8 +288,8 @@ Resources:
             Method: get
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: thankshell_users
+      - DynamoDBReadPolicy:
+          TableName: !Ref UsersTableName
       Layers:
       - !Ref CommonLayer
 
@@ -312,16 +307,16 @@ Resources:
             Method: post
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
-        - DynamoDBCrudPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
-        - DynamoDBCrudPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions ]
+      - DynamoDBReadPolicy:
+          TableName: !Ref AuthTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref UsersTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref GroupsTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref InfoTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref TransactionsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -343,14 +338,14 @@ Resources:
             Method: get
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions ]
+      - DynamoDBReadPolicy:
+          TableName: !Ref AuthTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref UsersTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref InfoTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref TransactionsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -368,14 +363,14 @@ Resources:
             Method: get
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions ]
+      - DynamoDBReadPolicy:
+          TableName: !Ref AuthTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref UsersTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref InfoTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref TransactionsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -397,16 +392,16 @@ Resources:
             Method: get
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions ]
+      - DynamoDBReadPolicy:
+          TableName: !Ref AuthTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref UsersTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref GroupsTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref InfoTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref TransactionsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -424,15 +419,15 @@ Resources:
             Method: post
             RestApiId: !Ref ThankshellApi
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, AuthTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, UsersTable ]
-        - DynamoDBReadPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, GroupsTable ]
-        - DynamoDBCrudPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, TableInfo ]
-        - DynamoDBCrudPolicy:
-            TableName: !FindInMap [ EnvironmentMap, !Ref Environment, RemittanceTransactions ]
+      - DynamoDBReadPolicy:
+          TableName: !Ref AuthTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref UsersTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref GroupsTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref InfoTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref TransactionsTableName
       Layers:
       - !Ref CommonLayer
