@@ -1,92 +1,26 @@
-let Auth = require('thankshell-libs/auth.js');
-let AWS = require("aws-sdk");
+const Auth = require('thankshell-libs/auth.js');
+const appInterface = require('thankshell-libs/interface.js');
+const GroupMembersDao = require('thankshell-libs/GroupMembersDao.js');
 
-class AccessDeniedError extends Error {}
+const run = async(event) => {
+  const groupId = event.pathParameters.group;
+  const memberId = event.pathParameters.member;
 
-class Group {
-    constructor(gid, members) {
-        this.gid = gid
-        this.members = members
-    }
+  const accessable = await Auth.isAccessableAsync(groupId, ['admin'], event.requestContext.authorizer.claims);
+  if (!accessable) {
+    throw new appInterface.PermissionDeniedError()
+  }
 
-    async deleteMember(dynamo, gid, target) {
-        this.members = this.members.values.filter(uid => uid != target)
+  await GroupMembersDao.deleteAsync(groupId, memberId);
+};
 
-        await dynamo.update({
-            TableName: process.env.GROUPS_TABLE_NAME,
-            Key:{
-                'group_id': gid,
-            },
-            UpdateExpression: 'set members = :members',
-            ExpressionAttributeValues: {
-                ':members': dynamo.createSet(this.members)
-            }
-        }).promise();
-    }
+exports.handler = async(event) => {
+  try {
+    await run(event);
 
-    static async load(dynamo, gid) {
-        const data = await dynamo.get({
-            TableName: process.env.GROUPS_TABLE_NAME,
-            Key:{
-                'group_id': gid,
-            },
-        }).promise();
-
-        return new Group(gid, data.Item.members)
-    }
-}
-
-const isAdmin = async(dynamo, groupId, userId) => {
-    let data = await dynamo.get({
-        TableName: process.env.GROUPS_TABLE_NAME,
-            Key:{
-                'group_id': groupId,
-            }
-    }).promise();
-
-    return data.Item.admins.values.includes(userId);
-}
-
-const deleteMember = async(event) => {
-    const dynamo = new AWS.DynamoDB.DocumentClient();
-
-    const userInfo = await Auth.getUserInfo(event.requestContext.authorizer.claims);
-    const gid = event.pathParameters.group;
-    const target = event.pathParameters.member;
-
-    const group = await Group.load(dynamo, gid)
-
-    if (!isAdmin(dynamo, gid, userInfo.userId)) {
-        throw new AccessDeniedError()
-    }
-
-    await group.deleteMember(dynamo, gid, target)
-
-    return {}
-}
-
-exports.handler = async(event, context, callback) => {
-    try {
-        let result = await deleteMember(event);
-        return {
-            statusCode: 200,
-            headers: {"Access-Control-Allow-Origin": "*"},
-            body: JSON.stringify(result),
-        };
-    } catch(err) {
-        console.log(err);
-        if (err instanceof AccessDeniedError) {
-            return {
-                statusCode: 403,
-                headers: {"Access-Control-Allow-Origin": "*"},
-                body: JSON.stringify({'message': '権限がありません'}),
-            }
-        } else {
-            return {
-                statusCode: 500,
-                headers: {"Access-Control-Allow-Origin": "*"},
-                body: JSON.stringify({'message': err.message}),
-            }
-        }
-    }
-}
+    return appInterface.getSuccessResponse();
+  } catch(err) {
+    console.log(err);
+    return appInterface.getErrorResponse(err);
+  }
+};
