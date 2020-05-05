@@ -1,94 +1,26 @@
-let Auth = require('thankshell-libs/auth.js');
-let AWS = require("aws-sdk");
-
-class AccessDeniedError extends Error {}
-class ClientError extends Error {}
-
-const setMember = async(dynamo, gid, members) => {
-    await dynamo.update({
-        TableName: process.env.GROUPS_TABLE_NAME,
-        Key:{
-            'group_id': gid,
-        },
-        UpdateExpression: 'set members = :members',
-        ExpressionAttributeValues: {
-            ':members': dynamo.createSet(members)
-        }
-    }).promise();
-}
-
-const loadMembers = async(dynamo, gid) => {
-    const data = await dynamo.get({
-        TableName: process.env.GROUPS_TABLE_NAME,
-        Key:{
-            'group_id': gid,
-        },
-    }).promise();
-
-    return data.Item.members.values
-}
-
-const isAdmin = async(dynamo, groupId, userId) => {
-    let data = await dynamo.get({
-        TableName: process.env.GROUPS_TABLE_NAME,
-            Key:{
-                'group_id': groupId,
-            }
-    }).promise();
-
-    return data.Item.admins.values.includes(userId);
-}
+const Auth = require('thankshell-libs/auth.js');
+const appInterface = require('thankshell-libs/interface.js');
+const GroupMembersDao = require('thankshell-libs/GroupMembersDao.js');
 
 const run = async(event) => {
-   const dynamo = new AWS.DynamoDB.DocumentClient()
-   const gid = event.pathParameters.group
-   const target = event.pathParameters.member
-   const userInfo = await Auth.getUserInfo(event.requestContext.authorizer.claims)
+  const groupId = event.pathParameters.group;
+  const memberId = event.pathParameters.member;
 
-   if (!isAdmin(dynamo, gid, userInfo.userId)) {
-       throw new AccessDeniedError()
-   }
+  const accessable = await Auth.isAccessableAsync(groupId, ['admin'], event.requestContext.authorizer.claims);
+  if (!accessable) {
+    throw new appInterface.PermissionDeniedError()
+  }
 
-   let members = await loadMembers(dynamo, gid)
-   if (members.includes(target)) {
-       throw new ClientError(`'${target}' already registered`)
-   }
+  await GroupMembersDao.addAsync(groupId, memberId);
+};
 
-   members.push(target)
+exports.handler = async(event) => {
+  try {
+    await run(event);
 
-   await setMember(dynamo, gid, members)
-
-   return {}
-}
-
-exports.handler = async(event, context, callback) => {
-    try {
-        const result = await run(event)
-        return {
-            statusCode: 200,
-            headers: {"Access-Control-Allow-Origin": "*"},
-            body: JSON.stringify(result),
-        };
-    } catch(err) {
-        console.log(err);
-        if (err instanceof AccessDeniedError) {
-            return {
-                statusCode: 403,
-                headers: {"Access-Control-Allow-Origin": "*"},
-                body: JSON.stringify({'message': '権限がありません'}),
-            }
-        } else if (err instanceof ClientError) {
-            return {
-                statusCode: 400,
-                headers: {"Access-Control-Allow-Origin": "*"},
-                body: JSON.stringify({'message': err.message}),
-            }
-        } else {
-            return {
-                statusCode: 500,
-                headers: {"Access-Control-Allow-Origin": "*"},
-                body: JSON.stringify({'message': err.message}),
-            }
-        }
-    }
-}
+    return appInterface.getSuccessResponse();
+  } catch(err) {
+    console.log(err);
+    return appInterface.getErrorResponse(err);
+  }
+};
