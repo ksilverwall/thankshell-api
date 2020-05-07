@@ -17,8 +17,8 @@ const run = async(event) => {
     throw new appInterface.ApplicationError('パラメータが誤っています', 'ILLIGAL_PARAMETERS', 400)
   }
 
-  if (!await Auth.isAccessableAsync(groupId, ['admin'], claims)) {
-    if (await Auth.isAccessableAsync(groupId, ['member'], claims)) {
+  if (!await Auth.isAccessableAsync(groupId, ['admins'], claims)) {
+    if (await Auth.isAccessableAsync(groupId, ['members'], claims)) {
       if(body.from !== userId) {
         throw new appInterface.PermissionDeniedError("この取引を発行する権限がありません")
       }
