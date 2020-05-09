@@ -6,7 +6,7 @@ const run = async(event) => {
   const groupId = event.pathParameters.group;
   const memberId = event.pathParameters.member;
 
-  const accessable = await Auth.isAccessableAsync(groupId, ['admin'], event.requestContext.authorizer.claims);
+  const accessable = await Auth.isAccessableAsync(groupId, ['admins'], event.requestContext.authorizer.claims);
   if (!accessable) {
     throw new appInterface.PermissionDeniedError()
   }
