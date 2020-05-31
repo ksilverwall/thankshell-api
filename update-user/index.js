@@ -20,7 +20,7 @@ const run = async(event) => {
     );
   }
 
-  await GroupMembersDao.updateAsync(groupId, authId, userId, member);
+  await (new GroupMembersDao()).updateAsync(groupId, authId, userId, member);
 };
 
 exports.handler = async(event) => {

@@ -9,7 +9,7 @@ const run = async(event) => {
 
   console.log(`clains: ${JSON.stringify(claims)}`)
 
-  await GroupMembersDao.entryAsync(groupId, memberId, Auth.getAuthId(claims))
+  await (new GroupMembersDao()).entryAsync(groupId, memberId, Auth.getAuthId(claims))
 }
 
 exports.handler = async(event) => {

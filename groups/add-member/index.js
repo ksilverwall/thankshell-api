@@ -11,7 +11,7 @@ const run = async(event) => {
     throw new appInterface.PermissionDeniedError()
   }
 
-  await GroupMembersDao.addAsync(groupId, memberId);
+  await (new GroupMembersDao()).addAsync(groupId, memberId);
 };
 
 exports.handler = async(event) => {
