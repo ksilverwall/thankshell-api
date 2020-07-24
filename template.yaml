@@ -105,7 +105,7 @@ Resources:
     Properties:
       LayerName: thankshell-libs
       Description: Common Application Resource Layer
-      ContentUri: layers
+      ContentUri: src/layers/common
 
   #######################################
   # Functions
@@ -117,7 +117,7 @@ Resources:
   GetUserInfo:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: get-user-info/
+      CodeUri: src/functions/get_user_info/
       Events:
         ApiTrigger:
           Type: Api
@@ -140,7 +140,7 @@ Resources:
   CreateUser:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: create-user/
+      CodeUri: src/functions/create_user/
       Events:
         ApiTrigger:
           Type: Api
@@ -159,7 +159,7 @@ Resources:
   UpdateUser:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: update-user/
+      CodeUri: src/functions/update_user/
       Events:
         ApiTrigger:
           Type: Api
@@ -184,7 +184,7 @@ Resources:
   GetGroupInfo:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: groups/get
+      CodeUri: src/functions/get_groups
       Events:
         ApiTrigger:
           Type: Api
@@ -207,7 +207,7 @@ Resources:
   AddMemberToGroup:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: groups/add-member
+      CodeUri: src/functions/add_group_member
       Events:
         ApiTrigger:
           Type: Api
@@ -230,7 +230,7 @@ Resources:
   RemoveMemberFromGroup:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: groups/delete-member
+      CodeUri: src/functions/delete_group_member
       Events:
         ApiTrigger:
           Type: Api
@@ -253,7 +253,7 @@ Resources:
   EntryToGroup:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: groups/entry
+      CodeUri: src/functions/entry
       Events:
         ApiTrigger:
           Type: Api
@@ -280,7 +280,7 @@ Resources:
   GetTokenPublished:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: get-token-published/
+      CodeUri: src/functions/get_token_published/
       Events:
         ApiTrigger:
           Type: Api
@@ -299,7 +299,7 @@ Resources:
   PublishToken:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: publish-token/
+      CodeUri: src/functions/publish_token/
       Events:
         ApiTrigger:
           Type: Api
@@ -330,7 +330,7 @@ Resources:
   GetTokenHolders:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: get-token-holders/
+      CodeUri: src/functions/get_token_holders/
       Events:
         ApiTrigger:
           Type: Api
@@ -355,7 +355,7 @@ Resources:
   GetTokenHoldings:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: get-token-holdings/
+      CodeUri: src/functions/get_token_holdings/
       Events:
         ApiTrigger:
           Type: Api
@@ -384,7 +384,7 @@ Resources:
   GetTransactions:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: get-transactions/
+      CodeUri: src/functions/get_transactions/
       Events:
         ApiTrigger:
           Type: Api
@@ -411,7 +411,7 @@ Resources:
   CreateTransaction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: create-transaction/
+      CodeUri: src/functions/create_transaction/
       Events:
         ApiTrigger:
           Type: Api
