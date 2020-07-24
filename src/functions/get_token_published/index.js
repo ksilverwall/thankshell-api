@@ -4,7 +4,7 @@ const TransactionsDao = require('thankshell-libs/TransactionsDao.js');
 const AWS = require("aws-sdk");
 
 
-const run = () => {
+const run = async() => {
   const memberId = await Auth.getMemberIdAsync('sla', Auth.getAuthId(claims));
   if (!memberId) {
     throw new appInterface.ApplicationError('memberId is not found', 'MEMBER_ID_NOT_FOUND', 403);
