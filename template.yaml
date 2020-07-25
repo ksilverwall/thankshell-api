@@ -20,6 +20,8 @@ Parameters:
     Type: String
   TransactionsTableName:
     Type: String
+  TokenTransactionsTableName:
+    Type: String
   Environment:
     Type: String
     AllowedValues:
@@ -42,6 +44,7 @@ Globals:
         GROUP_MEMBERS_TABLE_NAME: !Ref GroupMembersTableName
         TABLE_INFO_TABLE_NAME: !Ref InfoTableName
         REMITTANCE_TRANSACTIONS: !Ref TransactionsTableName
+        TOKEN_TRANSACTIONS_TABLE_NAME: !Ref TokenTransactionsTableName
 
 Resources:
 
@@ -320,6 +323,8 @@ Resources:
           TableName: !Ref InfoTableName
       - DynamoDBCrudPolicy:
           TableName: !Ref TransactionsTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref TokenTransactionsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -349,6 +354,8 @@ Resources:
           TableName: !Ref InfoTableName
       - DynamoDBReadPolicy:
           TableName: !Ref TransactionsTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref TokenTransactionsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -374,6 +381,8 @@ Resources:
           TableName: !Ref InfoTableName
       - DynamoDBReadPolicy:
           TableName: !Ref TransactionsTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref TokenTransactionsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -405,6 +414,8 @@ Resources:
           TableName: !Ref InfoTableName
       - DynamoDBReadPolicy:
           TableName: !Ref TransactionsTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref TokenTransactionsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -432,5 +443,7 @@ Resources:
           TableName: !Ref InfoTableName
       - DynamoDBCrudPolicy:
           TableName: !Ref TransactionsTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref TokenTransactionsTableName
       Layers:
       - !Ref CommonLayer
