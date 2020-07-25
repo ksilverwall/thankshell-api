@@ -1,6 +1,6 @@
 const Auth = require('thankshell-libs/auth.js');
 const appInterface = require('thankshell-libs/interface.js');
-const TransactionsDao = require('thankshell-libs/TransactionsDao.js');
+const TransactionService = require('thankshell-libs/TransactionService.js');
 
 const run = async(event) => {
   const groupId = 'sla';
@@ -9,7 +9,7 @@ const run = async(event) => {
     throw new appInterface.ApplicationError("user id not found", "MEMBER_NOT_FOUND", 400);
   }
 
-  const dao = new TransactionsDao(groupId);
+  const dao = new TransactionService(groupId);
 
   return await dao.getAccountHoldingAsync(userId);
 };

@@ -1,6 +1,6 @@
 const Auth = require('thankshell-libs/auth.js');
 const appInterface = require('thankshell-libs/interface.js');
-const TransactionsDao = require('thankshell-libs/TransactionsDao.js');
+const TransactionService = require('thankshell-libs/TransactionService.js');
 
 
 const run = async(event) => {
@@ -38,7 +38,7 @@ const run = async(event) => {
     transaction.comment = body.comment;
   }
 
-  const dao = new TransactionsDao();
+  const dao = new TransactionService();
   await dao.create(groupId, transaction);
 };
 

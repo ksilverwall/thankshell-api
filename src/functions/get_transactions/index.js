@@ -1,6 +1,6 @@
 const Auth = require('thankshell-libs/auth.js');
 const appInterface = require('thankshell-libs/interface.js');
-const TransactionsDao = require('thankshell-libs/TransactionsDao.js');
+const TransactionService = require('thankshell-libs/TransactionService.js');
 const AWS = require("aws-sdk");
 
 
@@ -23,7 +23,7 @@ const run = async(event) => {
 
   const params = event.multiValueQueryStringParameters
   const targetUser = getTargetUserId(params)
-  const transactionsDao = new TransactionsDao(); 
+  const transactionsDao = new TransactionService(); 
   let history = [];
   if (!targetUser) {
     if (!await Auth.isAccessableAsync(groupId, ['admins'], claims)) {
