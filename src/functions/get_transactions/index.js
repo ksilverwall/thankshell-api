@@ -1,8 +1,9 @@
 const Auth = require('thankshell-libs/auth.js');
 const appInterface = require('thankshell-libs/interface.js');
 const TransactionService = require('thankshell-libs/TransactionService.js');
-const AWS = require("aws-sdk");
-
+const GroupDao = require('thankshell-libs/GroupDao.js');
+const GroupMembersDao = require('thankshell-libs/GroupMembersDao.js');
+const TransactionHistoryRepository = require('thankshell-libs/TransactionHistoryRepository.js');
 
 const getTargetUserId = (params) => {
   if (params && params['user_id']) {
@@ -23,7 +24,12 @@ const run = async(event) => {
 
   const params = event.multiValueQueryStringParameters
   const targetUser = getTargetUserId(params)
-  const transactionsDao = new TransactionService(); 
+  const transactionsDao = new TransactionService(
+    groupId,
+    new GroupDao(),
+    new GroupMembersDao(),
+    new TransactionHistoryRepository(process.env.TOKEN_TRANSACTIONS_TABLE_NAME)
+  ); 
   let history = [];
   if (!targetUser) {
     if (!await Auth.isAccessableAsync(groupId, ['admins'], claims)) {
@@ -40,7 +46,7 @@ const run = async(event) => {
   }
 };
 
-exports.handler = async(event, context, callback) => {
+exports.handler = async(event) => {
   try {
     const result = await run(event);
 
