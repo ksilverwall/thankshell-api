@@ -19,7 +19,7 @@ const run = async(event) => {
     new TransactionHistoryRepository(process.env.TOKEN_TRANSACTIONS_TABLE_NAME)
   );
 
-  return await dao.getHoldingsAsync(userId, event);
+  return await dao.getHoldingsAsync();
 }
 
 exports.handler = async(event) => {

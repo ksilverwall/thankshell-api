@@ -5,6 +5,29 @@ const GroupDao = require('thankshell-libs/GroupDao.js');
 const GroupMembersDao = require('thankshell-libs/GroupMembersDao.js');
 const TransactionHistoryRepository = require('thankshell-libs/TransactionHistoryRepository.js');
 
+const BANK_MEMBER_ID = '__BANK__';
+const VOID_MEMBER_ID = '__VOID__';
+
+const decode = (memberId) => {
+  switch(memberId) {
+    case BANK_MEMBER_ID: return 'sla_bank';
+    case VOID_MEMBER_ID: return '--';
+    default: return memberId;
+  }
+}
+
+const convertToClassic = (record) => {
+  return {
+    "transaction_id": record['transaction_id'],
+    "from_account": decode(record['from_member_id']),
+    "to_account": decode(record['to_member_id']),
+    "type": 'selan',
+    "amount": record['amount'],
+    "timestamp": record['timestamp'],
+    "comment": record['comment'],
+  };
+}
+
 const getTargetUserId = (params) => {
   if (params && params['user_id']) {
     return params['user_id'][0]
@@ -30,7 +53,8 @@ const run = async(event) => {
     new GroupMembersDao(),
     new TransactionHistoryRepository(process.env.TOKEN_TRANSACTIONS_TABLE_NAME)
   ); 
-  let history = [];
+
+  let history = null;
   if (!targetUser) {
     if (!await Auth.isAccessableAsync(groupId, ['admins'], claims)) {
       throw new appInterface.PermissionDeniedError("この取引を参照する権限がありません")
@@ -41,8 +65,12 @@ const run = async(event) => {
     history = await transactionsDao.getMemberHistoryAsync(targetUser);
   }
 
+  const items = history.map(record => convertToClassic(record));
   return {
-      history: history,
+      history: {
+        Count: items.length,
+        Items: items,
+      },
   }
 };
 
