@@ -38,12 +38,8 @@ Globals:
     Runtime: nodejs12.x
     Environment:
       Variables:
-        AUTH_TABLE_NAME: !Ref AuthTableName
-        USERS_TABLE_NAME: !Ref UsersTableName
         GROUPS_TABLE_NAME: !Ref GroupsTableName
         GROUP_MEMBERS_TABLE_NAME: !Ref GroupMembersTableName
-        TABLE_INFO_TABLE_NAME: !Ref InfoTableName
-        REMITTANCE_TRANSACTIONS: !Ref TransactionsTableName
         TOKEN_TRANSACTIONS_TABLE_NAME: !Ref TokenTransactionsTableName
 
 Resources:
