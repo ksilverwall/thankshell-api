@@ -14,6 +14,8 @@ Parameters:
     Type: String
   GroupsTableName:
     Type: String
+  GroupsTableName2:
+    Type: String
   GroupMembersTableName:
     Type: String
   InfoTableName:
@@ -38,7 +40,7 @@ Globals:
     Runtime: nodejs12.x
     Environment:
       Variables:
-        GROUPS_TABLE_NAME: !Ref GroupsTableName
+        GROUPS_TABLE_NAME: !Ref GroupsTableName2
         GROUP_MEMBERS_TABLE_NAME: !Ref GroupMembersTableName
         TOKEN_TRANSACTIONS_TABLE_NAME: !Ref TokenTransactionsTableName
 
@@ -130,7 +132,7 @@ Resources:
       - DynamoDBReadPolicy:
           TableName: !Ref UsersTableName
       - DynamoDBReadPolicy:
-          TableName: !Ref GroupsTableName
+          TableName: !Ref GroupsTableName2
       - DynamoDBReadPolicy:
           TableName: !Ref GroupMembersTableName
       Layers:
@@ -197,7 +199,7 @@ Resources:
       - DynamoDBReadPolicy:
           TableName: !Ref UsersTableName
       - DynamoDBReadPolicy:
-          TableName: !Ref GroupsTableName
+          TableName: !Ref GroupsTableName2
       - DynamoDBReadPolicy:
           TableName: !Ref GroupMembersTableName
       Layers:
@@ -220,7 +222,7 @@ Resources:
       - DynamoDBReadPolicy:
           TableName: !Ref UsersTableName
       - DynamoDBCrudPolicy:
-          TableName: !Ref GroupsTableName
+          TableName: !Ref GroupsTableName2
       - DynamoDBCrudPolicy:
           TableName: !Ref GroupMembersTableName
       Layers:
@@ -243,7 +245,7 @@ Resources:
       - DynamoDBReadPolicy:
           TableName: !Ref UsersTableName
       - DynamoDBCrudPolicy:
-          TableName: !Ref GroupsTableName
+          TableName: !Ref GroupsTableName2
       - DynamoDBCrudPolicy:
           TableName: !Ref GroupMembersTableName
       Layers:
@@ -266,7 +268,7 @@ Resources:
       - DynamoDBCrudPolicy:
           TableName: !Ref UsersTableName
       - DynamoDBCrudPolicy:
-          TableName: !Ref GroupsTableName
+          TableName: !Ref GroupsTableName2
       - DynamoDBCrudPolicy:
           TableName: !Ref GroupMembersTableName
       Layers:
@@ -312,7 +314,7 @@ Resources:
       - DynamoDBReadPolicy:
           TableName: !Ref UsersTableName
       - DynamoDBReadPolicy:
-          TableName: !Ref GroupsTableName
+          TableName: !Ref GroupsTableName2
       - DynamoDBReadPolicy:
           TableName: !Ref GroupMembersTableName
       - DynamoDBCrudPolicy:
@@ -403,7 +405,7 @@ Resources:
       - DynamoDBReadPolicy:
           TableName: !Ref UsersTableName
       - DynamoDBReadPolicy:
-          TableName: !Ref GroupsTableName
+          TableName: !Ref GroupsTableName2
       - DynamoDBReadPolicy:
           TableName: !Ref GroupMembersTableName
       - DynamoDBReadPolicy:
@@ -432,7 +434,7 @@ Resources:
       - DynamoDBReadPolicy:
           TableName: !Ref UsersTableName
       - DynamoDBReadPolicy:
-          TableName: !Ref GroupsTableName
+          TableName: !Ref GroupsTableName2
       - DynamoDBReadPolicy:
           TableName: !Ref GroupMembersTableName
       - DynamoDBCrudPolicy:
