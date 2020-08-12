@@ -1,29 +1,14 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  thankshell-api
-
-  Sample SAM Template for thankshell-api
+Description: thankshell-api sam template
   
 Parameters:
-  EnvName:
-    Type: String
   GroupsTableName:
     Type: String
   GroupMembersTableName:
     Type: String
-  InfoTableName:
-    Type: String
-  TransactionsTableName:
-    Type: String
   TokenTransactionsTableName:
     Type: String
-  Environment:
-    Type: String
-    AllowedValues:
-    - staging
-    - production
-    Default: staging
 
 Globals:
   Api:
@@ -53,8 +38,6 @@ Resources:
         Authorizers:
           CognitoAuthorizer:
             UserPoolArn: arn:aws:cognito-idp:ap-northeast-1:027569216980:userpool/ap-northeast-1_GyRiCriHq
-      Variables:
-        transaction_database: !Ref EnvName
       Cors:
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
@@ -251,10 +234,6 @@ Resources:
       - DynamoDBReadPolicy:
           TableName: !Ref GroupMembersTableName
       - DynamoDBCrudPolicy:
-          TableName: !Ref InfoTableName
-      - DynamoDBCrudPolicy:
-          TableName: !Ref TransactionsTableName
-      - DynamoDBCrudPolicy:
           TableName: !Ref TokenTransactionsTableName
       Layers:
       - !Ref CommonLayer
@@ -278,10 +257,6 @@ Resources:
       - DynamoDBReadPolicy:
           TableName: !Ref GroupMembersTableName
       - DynamoDBReadPolicy:
-          TableName: !Ref InfoTableName
-      - DynamoDBReadPolicy:
-          TableName: !Ref TransactionsTableName
-      - DynamoDBReadPolicy:
           TableName: !Ref TokenTransactionsTableName
       Layers:
       - !Ref CommonLayer
@@ -300,10 +275,6 @@ Resources:
       Policies:
       - DynamoDBReadPolicy:
           TableName: !Ref GroupMembersTableName
-      - DynamoDBReadPolicy:
-          TableName: !Ref InfoTableName
-      - DynamoDBReadPolicy:
-          TableName: !Ref TransactionsTableName
       - DynamoDBReadPolicy:
           TableName: !Ref TokenTransactionsTableName
       Layers:
@@ -330,10 +301,6 @@ Resources:
       - DynamoDBReadPolicy:
           TableName: !Ref GroupMembersTableName
       - DynamoDBReadPolicy:
-          TableName: !Ref InfoTableName
-      - DynamoDBReadPolicy:
-          TableName: !Ref TransactionsTableName
-      - DynamoDBReadPolicy:
           TableName: !Ref TokenTransactionsTableName
       Layers:
       - !Ref CommonLayer
@@ -354,10 +321,6 @@ Resources:
           TableName: !Ref GroupsTableName
       - DynamoDBReadPolicy:
           TableName: !Ref GroupMembersTableName
-      - DynamoDBCrudPolicy:
-          TableName: !Ref InfoTableName
-      - DynamoDBCrudPolicy:
-          TableName: !Ref TransactionsTableName
       - DynamoDBCrudPolicy:
           TableName: !Ref TokenTransactionsTableName
       Layers:
