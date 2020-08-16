@@ -4,6 +4,7 @@ const TransactionService = require('thankshell-libs/TransactionService.js');
 const GroupDao = require('thankshell-libs/GroupDao.js');
 const GroupMembersDao = require('thankshell-libs/GroupMembersDao.js');
 const TransactionHistoryRepository = require('thankshell-libs/TransactionHistoryRepository.js');
+const GroupMemberPermission = require('thankshell-libs/GroupMemberPermission.js');
 
 const BANK_MEMBER_ID = '__BANK__';
 const VOID_MEMBER_ID = '__VOID__';
@@ -16,52 +17,94 @@ const encode = (oldMemberId) => {
   }
 }
 
-const run = async(event) => {
-  const groupId = 'sla';
-  const claims = event.requestContext.authorizer.claims;
-  const userId = await Auth.getMemberIdAsync('sla', Auth.getAuthId(claims));
-  if(!userId) {
-    throw new appInterface.ApplicationError('memberId is not found', 'MEMBER_ID_NOT_FOUND', 403)
+class Controller {
+  constructor(groupId) {
+    this.groupId = groupId;
+    this.transactionService = new TransactionService(
+      groupId,
+      new GroupDao(),
+      new GroupMembersDao(),
+      new TransactionHistoryRepository(process.env.TOKEN_TRANSACTIONS_TABLE_NAME)
+    );
   }
 
-  const body = JSON.parse(event.body);
+  async send(claims, fromMemberId, toMemberId, amount, comment, timestamp) {
+    if (!fromMemberId || !toMemberId || !amount) {
+      throw new appInterface.ApplicationError('パラメータが誤っています', 'ILLIGAL_PARAMETERS', 400)
+    }
 
-  if (!body.from || !body.to || !body.amount) {
-    throw new appInterface.ApplicationError('パラメータが誤っています', 'ILLIGAL_PARAMETERS', 400)
-  }
+    const authId = Auth.getAuthId(claims);
+    const member = await (new GroupMembersDao()).findMemberByAuthIdAsync(this.groupId, authId);
 
-  if (!await Auth.isAccessableAsync(groupId, ['admins'], claims)) {
-    if (await Auth.isAccessableAsync(groupId, ['members'], claims)) {
-      if(body.from !== userId) {
-        throw new appInterface.PermissionDeniedError("この取引を発行する権限がありません")
-      }
-    } else {
+    if(!member) {
+      throw new appInterface.ApplicationError('member is not found', 'MEMBER_ID_NOT_FOUND', 403)
+    }
+
+    if (member.permission < GroupMemberPermission.MEMBER || (member.permission < GroupMemberPermission.ADMIN && fromMemberId !== member.memberId)) {
       throw new appInterface.PermissionDeniedError("この取引を発行する権限がありません")
     }
+
+    await this.transactionService.create(
+      fromMemberId,
+      toMemberId,
+      parseInt(amount, 10),
+      timestamp,
+      comment ? comment : ''
+    );
   }
 
-  const dao = new TransactionService(
-    groupId,
-    new GroupDao(),
-    new GroupMembersDao(),
-    new TransactionHistoryRepository(process.env.TOKEN_TRANSACTIONS_TABLE_NAME)
-  );
+  async publish(authId, amount, comment, timestamp) {
+    if (!amount) {
+      throw new appInterface.ApplicationError(
+        "パラメータが誤っています",
+        "ILLIGAL_PARAMETERS",
+        403
+      );
+    }
 
-  const timestamp = +(new Date());
-  const comment = body.comment ? body.comment : '';
+    const member = await (new GroupMembersDao()).findMemberByAuthIdAsync(this.groupId, authId);
+    if(!member) {
+      throw new appInterface.ApplicationError("user id not found", "MEMBER_NOT_FOUND", 403);
+    }
+    if (member.permission < GroupMemberPermission.ADMIN) {
+      throw new appInterface.PermissionDeniedError("この取引を発行する権限がありません");
+    }
 
-  await dao.create(
-    encode(body.from),
-    encode(body.to),
-    parseInt(body.amount, 10),
-    timestamp,
-    comment
-  );
-};
+    await this.transactionService.publishAsync(
+      parseInt(amount, 10),
+      timestamp,
+      comment ? comment : ''
+    );
+  }
+}
 
-exports.handler = async(event) => {
+
+const run = async(event) => {
   try {
-    const result = await run(event);
+    const pathParameters = event.pathParameters;
+    const groupId = pathParameters['group'];
+    const claims = event.requestContext.authorizer.claims;
+    const body = JSON.parse(event.body);
+
+    const controller = new Controller(groupId);
+
+    switch(body.type) {
+      case 'send': {
+        const {fromMemberId, toMemberId, amount, comment} = body;
+        const timestamp = +(new Date());
+
+        await controller.send(claims, encode(fromMemberId), encode(toMemberId), amount, comment, timestamp);
+        break;
+      }
+      case 'publish': {
+        const {amount, comment} = body;
+        const timestamp = +(new Date());
+        const authId = Auth.getAuthId(claims);
+
+        await controller.publish(authId, amount, comment, timestamp);
+        break;
+      }
+    }
 
     return appInterface.getSuccessResponse();
   } catch(err) {
@@ -70,3 +113,6 @@ exports.handler = async(event) => {
   }
 };
 
+exports.handler = async(event) => {
+  return await run(event);
+};
