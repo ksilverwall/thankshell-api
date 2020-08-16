@@ -1,0 +1,21 @@
+{
+  "name": "thankshell-api",
+  "version": "2.0.0",
+  "description": "This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.720.0"
+  },
+  "devDependencies": {
+    "mocha": "^8.1.1"
+  },
+  "scripts": {
+    "test": "NODE_PATH=./src/layers/common/nodejs/node_modules mocha --recursive"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ksilverwall/thankshell-api.git"
+  }
+}
