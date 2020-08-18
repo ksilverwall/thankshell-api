@@ -47,6 +47,14 @@ Resources:
           ResponseParameters:
             Headers:
               Access-Control-Allow-Origin: "'*'"
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
 
   ###############################################
   # Layers
@@ -62,65 +70,10 @@ Resources:
   # Functions
 
   #
-  # User
-  #
-
-  GetUserInfo:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/functions/get_user_info/
-      Events:
-        ApiTrigger:
-          Type: Api
-          Properties:
-            Path: /user
-            Method: get
-            RestApiId: !Ref ThankshellApi
-      Policies:
-      - DynamoDBReadPolicy:
-          TableName: !Ref GroupsTableName
-      - DynamoDBReadPolicy:
-          TableName: !Ref GroupMembersTableName
-      Layers:
-      - !Ref CommonLayer
-
-  CreateUser:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/functions/create_user/
-      Events:
-        ApiTrigger:
-          Type: Api
-          Properties:
-            Path: /user
-            Method: put
-            RestApiId: !Ref ThankshellApi
-      Policies:
-      Layers:
-      - !Ref CommonLayer
-
-  UpdateUser:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/functions/update_user/
-      Events:
-        ApiTrigger:
-          Type: Api
-          Properties:
-            Path: /user/{userId}
-            Method: patch
-            RestApiId: !Ref ThankshellApi
-      Policies:
-      - DynamoDBCrudPolicy:
-          TableName: !Ref GroupMembersTableName
-      Layers:
-      - !Ref CommonLayer
-
-  #
   # Groups
   #
 
-  GetGroupInfo:
+  GetGroup:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/functions/get_groups
@@ -139,16 +92,16 @@ Resources:
       Layers:
       - !Ref CommonLayer
 
-  AddMemberToGroup:
+  EntryToGroup:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/functions/add_group_member
+      CodeUri: src/functions/entry
       Events:
         ApiTrigger:
           Type: Api
           Properties:
-            Path: /groups/{group}/members/{member}
-            Method: put
+            Path: /groups/{group}/entry
+            Method: POST
             RestApiId: !Ref ThankshellApi
       Policies:
       - DynamoDBCrudPolicy:
@@ -158,7 +111,66 @@ Resources:
       Layers:
       - !Ref CommonLayer
 
-  RemoveMemberFromGroup:
+  #
+  # Group Members
+  #
+
+  GetGroupMember:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/functions/get_user_info/
+      Events:
+        ApiTrigger:
+          Type: Api
+          Properties:
+            Path: /groups/{group}/members/self
+            Method: get
+            RestApiId: !Ref ThankshellApi
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName: !Ref GroupsTableName
+      - DynamoDBReadPolicy:
+          TableName: !Ref GroupMembersTableName
+      Layers:
+      - !Ref CommonLayer
+
+  UpdateGroupMember:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/functions/update_user/
+      Events:
+        ApiTrigger:
+          Type: Api
+          Properties:
+            Path: /groups/{group}/members/self
+            Method: patch
+            RestApiId: !Ref ThankshellApi
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: !Ref GroupMembersTableName
+      Layers:
+      - !Ref CommonLayer
+
+  AddGroupMember:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/functions/add_group_member
+      Events:
+        ApiTrigger:
+          Type: Api
+          Properties:
+            Path: /groups/{group}/members
+            Method: post
+            RestApiId: !Ref ThankshellApi
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: !Ref GroupsTableName
+      - DynamoDBCrudPolicy:
+          TableName: !Ref GroupMembersTableName
+      Layers:
+      - !Ref CommonLayer
+
+  RemoveGroupMember:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/functions/delete_group_member
@@ -168,25 +180,6 @@ Resources:
           Properties:
             Path: /groups/{group}/members/{member}
             Method: delete
-            RestApiId: !Ref ThankshellApi
-      Policies:
-      - DynamoDBCrudPolicy:
-          TableName: !Ref GroupsTableName
-      - DynamoDBCrudPolicy:
-          TableName: !Ref GroupMembersTableName
-      Layers:
-      - !Ref CommonLayer
-
-  EntryToGroup:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/functions/entry
-      Events:
-        ApiTrigger:
-          Type: Api
-          Properties:
-            Path: /groups/{group}/members/{member}/user
-            Method: put
             RestApiId: !Ref ThankshellApi
       Policies:
       - DynamoDBCrudPolicy:
@@ -208,33 +201,12 @@ Resources:
         ApiTrigger:
           Type: Api
           Properties:
-            Path: /token/{token}/published
+            Path: /groups/{group}/token/published
             Method: get
             RestApiId: !Ref ThankshellApi
       Policies:
       - DynamoDBReadPolicy:
           TableName: !Ref GroupMembersTableName
-      Layers:
-      - !Ref CommonLayer
-
-  PublishToken:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/functions/publish_token/
-      Events:
-        ApiTrigger:
-          Type: Api
-          Properties:
-            Path: /token/{token}/published
-            Method: post
-            RestApiId: !Ref ThankshellApi
-      Policies:
-      - DynamoDBReadPolicy:
-          TableName: !Ref GroupsTableName
-      - DynamoDBReadPolicy:
-          TableName: !Ref GroupMembersTableName
-      - DynamoDBCrudPolicy:
-          TableName: !Ref TokenTransactionsTableName
       Layers:
       - !Ref CommonLayer
 
@@ -250,7 +222,7 @@ Resources:
         ApiTrigger:
           Type: Api
           Properties:
-            Path: /token/{token}/holders
+            Path: /groups/{group}/token/holders
             Method: get
             RestApiId: !Ref ThankshellApi
       Policies:
@@ -269,7 +241,7 @@ Resources:
         ApiTrigger:
           Type: Api
           Properties:
-            Path: /token/{token}/holders/{user}
+            Path: /groups/{group}/token/holders/{user}
             Method: get
             RestApiId: !Ref ThankshellApi
       Policies:
@@ -292,7 +264,7 @@ Resources:
         ApiTrigger:
           Type: Api
           Properties:
-            Path: /token/{token}/transactions
+            Path: /groups/{group}/token/transactions
             Method: get
             RestApiId: !Ref ThankshellApi
       Policies:
@@ -313,7 +285,7 @@ Resources:
         ApiTrigger:
           Type: Api
           Properties:
-            Path: /token/{token}/transactions
+            Path: /groups/{group}/token/transactions
             Method: post
             RestApiId: !Ref ThankshellApi
       Policies:

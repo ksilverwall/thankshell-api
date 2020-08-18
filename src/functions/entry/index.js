@@ -4,8 +4,9 @@ const GroupMembersDao = require('thankshell-libs/GroupMembersDao.js');
 
 const run = async(event) => {
   const groupId = event.pathParameters.group
-  const memberId = event.pathParameters.member
   const claims = event.requestContext.authorizer.claims
+  const body = JSON.parse(event.body);
+  const {memberId} = body;
 
   console.log(`clains: ${JSON.stringify(claims)}`)
 

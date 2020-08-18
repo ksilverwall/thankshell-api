@@ -4,7 +4,8 @@ const GroupMembersDao = require('thankshell-libs/GroupMembersDao.js');
 
 const run = async(event) => {
   const groupId = event.pathParameters.group;
-  const memberId = event.pathParameters.member;
+  const body = JSON.parse(event.body);
+  const {memberId} = body;
 
   const accessable = await Auth.isAccessableAsync(groupId, ['admins'], event.requestContext.authorizer.claims);
   if (!accessable) {
