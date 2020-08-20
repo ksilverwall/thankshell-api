@@ -7,7 +7,7 @@ const run = async(event) => {
   console.log(`EventBody: ${event.body}`);
   console.log(`PathParameter: ${event.pathParameters}`);
 
-  const groupId = 'sla';
+  const groupId = event.pathParameters.group;
   const userId = event.pathParameters.userId
   const authId = Auth.getAuthId(event.requestContext.authorizer.claims);
   const member = JSON.parse(event.body)

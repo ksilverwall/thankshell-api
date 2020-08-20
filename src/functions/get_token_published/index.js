@@ -6,31 +6,30 @@ const GroupMembersDao = require('thankshell-libs/GroupMembersDao.js');
 const TransactionHistoryRepository = require('thankshell-libs/TransactionHistoryRepository.js');
 
 
-const run = async() => {
-  const groupId = 'sla';
-  const memberId = await Auth.getMemberIdAsync('sla', Auth.getAuthId(claims));
-  if (!memberId) {
-    throw new appInterface.ApplicationError('memberId is not found', 'MEMBER_ID_NOT_FOUND', 403);
-  }
+const run = async(event) => {
+  try{
+    const groupId = event.pathParameters.group;
+    const memberId = await Auth.getMemberIdAsync(groupId, Auth.getAuthId(claims));
+    if (!memberId) {
+      throw new appInterface.ApplicationError('memberId is not found', 'MEMBER_ID_NOT_FOUND', 403);
+    }
 
-  const transactionService = new TransactionService(
-    groupId,
-    new GroupDao(),
-    new GroupMembersDao(),
-    new TransactionHistoryRepository(process.env.TOKEN_TRANSACTIONS_TABLE_NAME)
-  );
+    const transactionService = new TransactionService(
+      groupId,
+      new GroupDao(),
+      new GroupMembersDao(),
+      new TransactionHistoryRepository(process.env.TOKEN_TRANSACTIONS_TABLE_NAME)
+    );
 
-  return await transactionService.getPublishedAsync();
-}
-
-exports.handler = async(event, context, callback) => {
-  try {
-    const result = await run(event);
+    const result = await transactionService.getPublishedAsync();
 
     return appInterface.getSuccessResponse(result);
-  } catch(err) {
-    console.log(err);
-
+  } catch(error) {
+    console.error(err);
     return appInterface.getErrorResponse(err);
   }
+}
+
+exports.handler = async(event) => {
+  return await run(event);
 };

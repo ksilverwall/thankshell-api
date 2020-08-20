@@ -5,8 +5,10 @@ const GroupDao = require('thankshell-libs/GroupDao.js');
 const GroupMembersDao = require('thankshell-libs/GroupMembersDao.js');
 const TransactionHistoryRepository = require('thankshell-libs/TransactionHistoryRepository.js');
 
+const BANK_MEMBER_ID = '__BANK__';
+
 const run = async(event) => {
-  const groupId = 'sla';
+  const groupId = event.pathParameters.group;
   const userId = await Auth.getMemberIdAsync(groupId, Auth.getAuthId(event.requestContext.authorizer.claims));
   if (!userId) {
     throw new appInterface.ApplicationError("user id not found", "MEMBER_NOT_FOUND", 400)
@@ -19,7 +21,12 @@ const run = async(event) => {
     new TransactionHistoryRepository(process.env.TOKEN_TRANSACTIONS_TABLE_NAME)
   );
 
-  return await dao.getHoldingsAsync();
+  let result = await dao.getHoldingsAsync();
+
+  result['sla_bank'] = result[BANK_MEMBER_ID];
+  delete result[BANK_MEMBER_ID];
+
+  return await result;
 }
 
 exports.handler = async(event) => {

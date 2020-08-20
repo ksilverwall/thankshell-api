@@ -17,29 +17,30 @@ const encode = (oldMemberId) => {
 }
 
 const run = async(event) => {
-  const groupId = 'sla';
-  const userId = await Auth.getMemberIdAsync(groupId, Auth.getAuthId(event.requestContext.authorizer.claims));
-  if (!userId) {
-    throw new appInterface.ApplicationError("user id not found", "MEMBER_NOT_FOUND", 400);
-  }
-
-  const dao = new TransactionService(
-    groupId,
-    new GroupDao(),
-    new GroupMembersDao(),
-    new TransactionHistoryRepository(process.env.TOKEN_TRANSACTIONS_TABLE_NAME)
-  );
-
-  return await dao.getAccountHoldingAsync(encode(userId));
-};
-
-exports.handler = async(event) => {
   try {
-    const result = await run(event);
+    const groupId = event.pathParameters.group;
+    const userId = await Auth.getMemberIdAsync(groupId, Auth.getAuthId(event.requestContext.authorizer.claims));
+    if (!userId) {
+      throw new appInterface.ApplicationError("user id not found", "MEMBER_NOT_FOUND", 400);
+    }
+
+    const dao = new TransactionService(
+      groupId,
+      new GroupDao(),
+      new GroupMembersDao(),
+      new TransactionHistoryRepository(process.env.TOKEN_TRANSACTIONS_TABLE_NAME)
+    );
+
+    let result = await dao.getAccountHoldingAsync(encode(userId));
+
     return appInterface.getSuccessResponse(result);
   } catch(err) {
     console.error(err);
 
     return appInterface.getErrorResponse(err);
   }
+};
+
+exports.handler = async(event) => {
+    return await run(event);
 };
